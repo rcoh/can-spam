@@ -3,9 +3,7 @@ import scala.io.Source
 import scala.collection.mutable
 import scala.collection.parallel
 
-
 object SpamCLI extends App {
-  println(args)
   if(args.size == 0) {
     println("Usage: ")
     println("Create DB: scala canspam.scala crdb hamdir spamdir")
@@ -121,6 +119,4 @@ object SpamAnalyzer {
     println("Spam Results: Scanned %d files. Classsified %d as ham. Percent Error: %g".
       format(spamFiles.size, numSpamErrors, numSpamErrors.toDouble / spamFiles.size))
   }
-
 }
-SpamAnalyzer.createSpamProbabilityDict("easy_ham", "spam")
