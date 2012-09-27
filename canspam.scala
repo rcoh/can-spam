@@ -3,9 +3,44 @@ import scala.io.Source
 import scala.collection.mutable
 import scala.collection.parallel
 
-type FreqCounter = Map[String, Int]
+
+object SpamCLI extends App {
+  println(args)
+  if(args.size == 0) {
+    println("Usage: ")
+    println("Create DB: scala canspam.scala crdb hamdir spamdir")
+    println("Classify a message: scala canspam.scala classify message")
+    println("Evaluate Performance: scala canspam.scala eval hamdir spamdir")
+    System.exit(1)
+  }
+  if(args(0) == "crdb") {
+    if(args.size != 3) {
+      println("Not enough args")
+      System.exit(1)
+    }
+    val results = SpamAnalyzer.createSpamProbabilityDict(args(1), args(2))
+    SpamAnalyzer.serialize(results)
+  }
+  if(args(0) == "classify") {
+    if(args.size != 2) {
+      println("Not enough args")
+      System.exit(1)
+    }
+    val dict = SpamAnalyzer.deserialize
+    println(SpamAnalyzer.classify(Source.fromFile(args(1)) mkString, dict))
+  }
+  if(args(0) == "eval") {
+    if(args.size != 3) {
+      println("Not enough args")
+      System.exit(1)
+    }
+    val dict = SpamAnalyzer.deserialize
+    SpamAnalyzer.evaluatePerformance(args(1), args(2), dict)
+  }
+}
 
 object SpamAnalyzer {
+  type FreqCounter = Map[String, Int]
   def countMap(source: String): FreqCounter = {
     source.toLowerCase.split("""[^a-z0-9$-']""").groupBy(x => x).mapValues(x => x.size)
   }
@@ -93,7 +128,3 @@ object SpamAnalyzer {
   }
 
 }
-
-val resultDict = SpamAnalyzer.createSpamProbabilityDict("hard_ham", "soft_spam")
-
-SpamAnalyzer.evaluatePerformance("easy_ham", "more_spam", resultDict)
