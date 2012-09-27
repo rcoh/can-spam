@@ -46,13 +46,7 @@ object SpamAnalyzer {
   }
 
   def dictMerge(tab1: FreqCounter, tab2: FreqCounter): FreqCounter = {
-    val result = mutable.Map(tab1.toSeq: _*).withDefaultValue(0)
-    tab2.map {
-      case (str, count) => {
-        result(str) += count
-      }
-    }
-    result.toMap
+    tab1 ++ tab2.map{ case (k,v) => k -> (v + tab1.getOrElse(k,0)) }
   }
 
   def directoryToFileContents(dirName: String): parallel.mutable.ParArray[String] = {
@@ -64,7 +58,8 @@ object SpamAnalyzer {
 
   def createCorpusFromDir(dirName: String): FreqCounter = {
     val files = directoryToFileContents(dirName)
-    files.map(countMap(_)).reduce((x,y) => dictMerge(x,y)).withDefaultValue(0)
+    println("have files")
+    files.view.map(countMap(_)).reduce((x,y) => dictMerge(x,y)).withDefaultValue(0)
   }
 
   def createSpamProbabilityDict(hamDir: String, spamDir: String): Map[String, Double] = {
@@ -128,3 +123,4 @@ object SpamAnalyzer {
   }
 
 }
+SpamAnalyzer.createSpamProbabilityDict("easy_ham", "spam")
